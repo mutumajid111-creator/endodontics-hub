@@ -1,9 +1,17 @@
 import Link from "next/link";
-import { clinicalCases } from "@/lib/content";
+import { createPublicSupabaseClient } from "@/lib/supabase-public";
 
 export const metadata = { title: "Clinical Cases | Endodontics Hub" };
+export const dynamic = "force-dynamic";
 
-export default function CasesPage() {
+export default async function CasesPage() {
+  const supabase = createPublicSupabaseClient();
+  const { data: cases } = await supabase
+    .from("cases")
+    .select("id,title,slug,summary,category,tooth")
+    .eq("status", "published")
+    .order("published_at", { ascending: false });
+
   return (
     <main>
       <header className="header">
@@ -21,10 +29,10 @@ export default function CasesPage() {
       </section>
 
       <section className="shell caseArchive">
-        {clinicalCases.map((c, i) => (
-          <article className="archiveCard" key={c.slug}>
+        {!cases?.length ? <div className="archiveEmpty"><h2>No published cases yet.</h2><p>Published clinical cases will appear here automatically.</p></div> : cases.map((c, i) => (
+          <article className="archiveCard" key={c.id}>
             <div className="archiveVisual"><span>{String(i + 1).padStart(2, "0")}</span><div className="xrayTooth"><b></b><b></b><b></b></div></div>
-            <div className="archiveBody"><div className="caseMeta darkText"><span>{c.category}</span><span>{c.tooth}</span></div><h2>{c.title}</h2><p>{c.summary}</p><Link href={`/cases/${c.slug}`}>Open full case →</Link></div>
+            <div className="archiveBody"><div className="caseMeta darkText"><span>{c.category || "Clinical Case"}</span><span>{c.tooth || "Endodontics"}</span></div><h2>{c.title}</h2><p>{c.summary}</p><Link href={`/cases/${c.slug}`}>Open full case →</Link></div>
           </article>
         ))}
       </section>
