@@ -2,12 +2,11 @@
 
 import Link from "next/link";
 import { FormEvent, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 
 export default function MemberLoginPage(){
   const router=useRouter();
-  const searchParams=useSearchParams();
   const [email,setEmail]=useState("");
   const [password,setPassword]=useState("");
   const [loading,setLoading]=useState(false);
@@ -17,7 +16,8 @@ export default function MemberLoginPage(){
     e.preventDefault(); setLoading(true); setError("");
     const {error}=await supabase.auth.signInWithPassword({email,password});
     if(error){setError(error.message);setLoading(false);return;}
-    router.replace(searchParams.get("next") || "/account");
+    const next=new URLSearchParams(window.location.search).get("next") || "/account";
+    router.replace(next.startsWith("/")?next:"/account");
     router.refresh();
   }
 
