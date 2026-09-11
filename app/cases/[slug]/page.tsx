@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createPublicSupabaseClient } from "@/lib/supabase-public";
+import styles from "./case.module.css";
 
 export const dynamic = "force-dynamic";
 
@@ -34,7 +35,7 @@ export default async function CaseDetailPage({ params }: { params: Promise<{ slu
   }));
 
   return (
-    <main>
+    <main className={styles.root}>
       <header className="header"><div className="shell nav"><Link href="/" className="logo"><span className="mark">E</span><span><strong>ENDODONTICS</strong><small>HUB · DR. MUTHANNA MAJID</small></span></Link><Link href="/cases" className="navcta">All Cases</Link></div></header>
       <section className="caseDetailHero shell"><p className="eyebrow">{item.category || "Clinical Case"}</p><h1>{item.title}</h1><div className="detailMeta"><span>{item.tooth || "Endodontics"}</span><span>Clinical Case</span></div><p>{item.summary}</p></section>
       <section className="shell detailGrid">
