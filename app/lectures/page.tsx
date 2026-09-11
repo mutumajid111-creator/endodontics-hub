@@ -2,46 +2,17 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import Brand from "@/components/Brand";
 import { supabase } from "@/lib/supabase";
 
-type Lecture = {
-  id: string;
-  title: string;
-  slug: string;
-  description: string | null;
-  category: string | null;
-  sort_order: number;
-};
+type Lecture={id:string;title:string;slug:string;description:string|null;category:string|null;sort_order:number;access_level:"free"|"subscriber"};
 
-export default function LecturesPage() {
-  const router = useRouter();
-  const [lectures, setLectures] = useState<Lecture[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    async function load() {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        router.replace("/member/login?next=/lectures");
-        return;
-      }
-      const { data } = await supabase.from("lectures").select("id,title,slug,description,category,sort_order").eq("status", "published").order("sort_order").order("created_at");
-      setLectures(data || []);
-      setLoading(false);
-    }
-    void load();
-  }, [router]);
-
-  return (
-    <main>
-      <header className="header"><div className="shell nav"><Link href="/" className="logo"><span className="mark">E</span><span><strong>ENDODONTICS</strong><small>LECTURE LIBRARY</small></span></Link><Link href="/account" className="navcta">My Account</Link></div></header>
-      <section className="pageHero shell"><p className="eyebrow">MEMBERS ONLY</p><h1>Endodontic Lectures</h1><p>Private educational videos available to active members.</p></section>
-      <section className="shell researchList">
-        {loading ? <p>Loading lectures...</p> : lectures.length ? lectures.map((lecture, i) => (
-          <article key={lecture.id}><span>{String(i + 1).padStart(2,"0")}</span><div><small>{lecture.category || "LECTURE"}</small><h2>{lecture.title}</h2><p>{lecture.description}</p></div><Link href={`/lectures/${lecture.slug}`}>Watch →</Link></article>
-        )) : <p>No lectures are available for your current access level yet.</p>}
-      </section>
-    </main>
-  );
+export default function LecturesPage(){
+ const [lectures,setLectures]=useState<Lecture[]>([]); const [loading,setLoading]=useState(true);
+ useEffect(()=>{async function load(){const {data}=await supabase.from("lecture_catalog").select("id,title,slug,description,category,sort_order,access_level").order("sort_order").order("published_at",{ascending:false});setLectures((data||[]) as Lecture[]);setLoading(false);}void load();},[]);
+ return <main className="memberPage">
+  <header className="memberHeader"><div className="shell memberNav"><Brand/><nav className="navlinks"><Link href="/cases">Cases</Link><Link href="/lectures">Lectures</Link><Link href="/research">Research</Link><Link href="/pricing">Membership</Link></nav><Link href="/account" className="navcta">My Account</Link></div></header>
+  <section className="memberHero shell"><p className="eyebrow">VIDEO LIBRARY</p><h1>Endodontic lectures.</h1><p>Private educational videos are embedded inside the platform. Subscriber lectures unlock automatically with an active membership.</p></section>
+  <section className="shell researchList">{loading?<p>Loading lectures...</p>:lectures.length?lectures.map((lecture,i)=><article key={lecture.id}><span>{String(i+1).padStart(2,"0")}</span><div><small>{lecture.category||"LECTURE"}</small><h2>{lecture.title}</h2><p>{lecture.description}</p></div><Link href={`/lectures/${lecture.slug}`}>{lecture.access_level==="subscriber"?"🔒 Watch":"Watch free"} →</Link></article>):<div className="emptyPremium"><h2>No lectures published yet.</h2></div>}</section>
+ </main>;
 }
