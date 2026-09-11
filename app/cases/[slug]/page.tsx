@@ -5,6 +5,14 @@ import styles from "./case.module.css";
 
 export const dynamic = "force-dynamic";
 
+type CaseImage = {
+  id: string;
+  image_path: string;
+  image_type: string;
+  caption: string | null;
+  sort_order: number;
+};
+
 export default async function CaseDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const supabase = createPublicSupabaseClient();
@@ -24,12 +32,12 @@ export default async function CaseDetailPage({ params }: { params: Promise<{ slu
     .eq("case_id", item.id)
     .order("sort_order", { ascending: true });
 
-  const treatmentSteps = (item.treatment || "")
+  const treatmentSteps = String(item.treatment || "")
     .split("\n")
-    .map((step) => step.trim())
+    .map((step: string) => step.trim())
     .filter(Boolean);
 
-  const media = (images || []).map((image) => ({
+  const media = ((images || []) as CaseImage[]).map((image: CaseImage) => ({
     ...image,
     url: supabase.storage.from("case-images").getPublicUrl(image.image_path).data.publicUrl,
   }));
@@ -42,7 +50,7 @@ export default async function CaseDetailPage({ params }: { params: Promise<{ slu
         <aside className="detailRail"><div><span>01</span><b>Diagnosis</b></div><div><span>02</span><b>Treatment</b></div><div><span>03</span><b>Outcome</b></div><div><span>04</span><b>Images</b></div></aside>
         <div className="detailContent">
           <section><h2>Diagnosis</h2><p>{item.diagnosis || "Clinical details will be added soon."}</p></section>
-          <section><h2>Treatment sequence</h2>{treatmentSteps.length ? <ol>{treatmentSteps.map((step) => <li key={step}>{step}</li>)}</ol> : <p>Treatment sequence will be added soon.</p>}</section>
+          <section><h2>Treatment sequence</h2>{treatmentSteps.length ? <ol>{treatmentSteps.map((step: string) => <li key={step}>{step}</li>)}</ol> : <p>Treatment sequence will be added soon.</p>}</section>
           <section><h2>Outcome</h2><p>{item.outcome || "Outcome documentation will be added soon."}</p></section>
           <section><h2>Clinical images & radiographs</h2>{media.length ? <div className="caseMediaGrid">{media.map((image) => <figure key={image.id}><img src={image.url} alt={image.caption || `${item.title} ${image.image_type}`} /><figcaption><span>{image.image_type}</span>{image.caption ? <p>{image.caption}</p> : null}</figcaption></figure>)}</div> : <div className="imagePlaceholder"><span>No images uploaded yet</span><p>Images added from the admin dashboard will appear here automatically.</p></div>}</section>
         </div>
