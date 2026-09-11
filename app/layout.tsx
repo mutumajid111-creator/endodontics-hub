@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import "./brand-theme.css";
+import "./logo-fixes.css";
 
 export const metadata: Metadata = {
   title: "Endodontics Hub | Dr. Muthanna Majid",

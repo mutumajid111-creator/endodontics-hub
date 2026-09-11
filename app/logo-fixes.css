@@ -1,0 +1,4 @@
+/* Logo visibility fixes */
+.contact .signatureMark{display:block;width:min(520px,86%);height:auto;margin:0 auto 34px;padding:26px 32px;background:linear-gradient(135deg,#0f1d48,#1b2b68);border:1px solid rgba(212,175,75,.45);border-radius:20px;box-shadow:0 22px 55px rgba(23,37,84,.18);filter:none!important;opacity:1!important;object-fit:contain}
+.contact{position:relative}.contact:before{content:"";position:absolute;left:50%;top:52px;width:120px;height:3px;transform:translateX(-50%);background:linear-gradient(90deg,transparent,#d4af4b,transparent)}
+@media(max-width:650px){.contact .signatureMark{width:100%;padding:20px 18px;border-radius:16px;margin-bottom:28px}}
