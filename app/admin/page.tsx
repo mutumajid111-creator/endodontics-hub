@@ -4,6 +4,7 @@ import Link from "next/link";
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
+import styles from "./admin.module.css";
 
 type CaseRow = {
   id: string;
@@ -235,7 +236,7 @@ export default function AdminPage() {
   if (loading) return <main className="adminLoading">Loading dashboard...</main>;
 
   return (
-    <main className="adminPage">
+    <main className={`${styles.root} adminPage`}>
       <aside className="adminSidebar">
         <Link href="/" className="adminBrand">ENDODONTICS HUB</Link>
         <nav>
