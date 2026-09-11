@@ -1,16 +1,22 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 
 type CaseRow = {
   id: string;
   title: string;
+  slug: string;
+  summary: string | null;
+  diagnosis: string | null;
+  treatment: string | null;
+  outcome: string | null;
   category: string | null;
   tooth: string | null;
   status: "draft" | "published";
+  featured: boolean;
 };
 
 type ArticleRow = {
@@ -20,57 +26,213 @@ type ArticleRow = {
   status: "draft" | "published";
 };
 
+const emptyForm = {
+  title: "",
+  slug: "",
+  summary: "",
+  diagnosis: "",
+  treatment: "",
+  outcome: "",
+  category: "",
+  tooth: "",
+  status: "draft" as "draft" | "published",
+  featured: false,
+};
+
+function makeSlug(value: string) {
+  return value
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
 export default function AdminPage() {
   const router = useRouter();
   const [cases, setCases] = useState<CaseRow[]>([]);
   const [articles, setArticles] = useState<ArticleRow[]>([]);
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [showForm, setShowForm] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [form, setForm] = useState(emptyForm);
+  const [files, setFiles] = useState<File[]>([]);
+  const [imageType, setImageType] = useState("clinical");
+  const [message, setMessage] = useState("");
 
-  useEffect(() => {
-    let active = true;
+  const publishedCount = useMemo(() => cases.filter((c) => c.status === "published").length, [cases]);
 
-    async function loadDashboard() {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        router.replace("/admin/login");
-        return;
-      }
-
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("role")
-        .eq("user_id", user.id)
-        .maybeSingle();
-
-      if (profile?.role !== "admin") {
-        await supabase.auth.signOut();
-        router.replace("/admin/login");
-        return;
-      }
-
-      const [{ data: caseData }, { data: articleData }] = await Promise.all([
-        supabase.from("cases").select("id,title,category,tooth,status").order("created_at", { ascending: false }),
-        supabase.from("articles").select("id,title,category,status").order("created_at", { ascending: false }),
-      ]);
-
-      if (!active) return;
-      setCases((caseData || []) as CaseRow[]);
-      setArticles((articleData || []) as ArticleRow[]);
-      setLoading(false);
+  async function loadDashboard() {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      router.replace("/admin/login");
+      return;
     }
 
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    if (profile?.role !== "admin") {
+      await supabase.auth.signOut();
+      router.replace("/admin/login");
+      return;
+    }
+
+    const [{ data: caseData }, { data: articleData }] = await Promise.all([
+      supabase.from("cases").select("id,title,slug,summary,diagnosis,treatment,outcome,category,tooth,status,featured").order("created_at", { ascending: false }),
+      supabase.from("articles").select("id,title,category,status").order("created_at", { ascending: false }),
+    ]);
+
+    setCases((caseData || []) as CaseRow[]);
+    setArticles((articleData || []) as ArticleRow[]);
+    setLoading(false);
+  }
+
+  useEffect(() => {
     loadDashboard();
-    return () => { active = false; };
-  }, [router]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   async function signOut() {
     await supabase.auth.signOut();
     router.replace("/admin/login");
   }
 
-  if (loading) {
-    return <main className="adminLoading">Loading dashboard...</main>;
+  function startNewCase() {
+    setEditingId(null);
+    setForm(emptyForm);
+    setFiles([]);
+    setImageType("clinical");
+    setMessage("");
+    setShowForm(true);
   }
+
+  function startEdit(item: CaseRow) {
+    setEditingId(item.id);
+    setForm({
+      title: item.title,
+      slug: item.slug,
+      summary: item.summary || "",
+      diagnosis: item.diagnosis || "",
+      treatment: item.treatment || "",
+      outcome: item.outcome || "",
+      category: item.category || "",
+      tooth: item.tooth || "",
+      status: item.status,
+      featured: item.featured,
+    });
+    setFiles([]);
+    setMessage("");
+    setShowForm(true);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  async function uploadImages(caseId: string) {
+    if (!files.length) return;
+
+    for (let index = 0; index < files.length; index++) {
+      const file = files[index];
+      const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
+      const safeBase = file.name.replace(/\.[^/.]+$/, "").replace(/[^a-zA-Z0-9-_]+/g, "-").slice(0, 50);
+      const path = `${caseId}/${Date.now()}-${index}-${safeBase}.${ext}`;
+
+      const { error: uploadError } = await supabase.storage.from("case-images").upload(path, file, {
+        cacheControl: "3600",
+        upsert: false,
+        contentType: file.type || undefined,
+      });
+      if (uploadError) throw uploadError;
+
+      const { error: imageError } = await supabase.from("case_images").insert({
+        case_id: caseId,
+        image_path: path,
+        image_type: imageType,
+        sort_order: index,
+      });
+      if (imageError) throw imageError;
+    }
+  }
+
+  async function saveCase(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setSaving(true);
+    setMessage("");
+
+    try {
+      const slug = form.slug.trim() || makeSlug(form.title);
+      const payload = {
+        title: form.title.trim(),
+        slug,
+        summary: form.summary.trim() || null,
+        diagnosis: form.diagnosis.trim() || null,
+        treatment: form.treatment.trim() || null,
+        outcome: form.outcome.trim() || null,
+        category: form.category.trim() || null,
+        tooth: form.tooth.trim() || null,
+        status: form.status,
+        featured: form.featured,
+        published_at: form.status === "published" ? new Date().toISOString() : null,
+        updated_at: new Date().toISOString(),
+      };
+
+      let caseId = editingId;
+
+      if (editingId) {
+        const { error } = await supabase.from("cases").update(payload).eq("id", editingId);
+        if (error) throw error;
+      } else {
+        const { data, error } = await supabase.from("cases").insert(payload).select("id").single();
+        if (error) throw error;
+        caseId = data.id;
+      }
+
+      if (!caseId) throw new Error("Case ID was not created.");
+      await uploadImages(caseId);
+      setMessage(editingId ? "Case updated successfully." : "Case created successfully.");
+      setShowForm(false);
+      setEditingId(null);
+      setForm(emptyForm);
+      setFiles([]);
+      await loadDashboard();
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Unable to save case.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function deleteCase(id: string, title: string) {
+    if (!window.confirm(`Delete “${title}”? This cannot be undone.`)) return;
+    const { error } = await supabase.from("cases").delete().eq("id", id);
+    if (error) {
+      setMessage(error.message);
+      return;
+    }
+    setMessage("Case deleted.");
+    await loadDashboard();
+  }
+
+  async function togglePublish(item: CaseRow) {
+    const nextStatus = item.status === "published" ? "draft" : "published";
+    const { error } = await supabase
+      .from("cases")
+      .update({
+        status: nextStatus,
+        published_at: nextStatus === "published" ? new Date().toISOString() : null,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", item.id);
+    if (error) {
+      setMessage(error.message);
+      return;
+    }
+    await loadDashboard();
+  }
+
+  if (loading) return <main className="adminLoading">Loading dashboard...</main>;
 
   return (
     <main className="adminPage">
@@ -91,41 +253,66 @@ export default function AdminPage() {
       <section className="adminMain">
         <div className="adminTop">
           <div><p className="eyebrow">ADMIN DASHBOARD</p><h1>Content control center.</h1></div>
-          <button disabled>+ New Case</button>
+          <button className="adminPrimary" onClick={startNewCase}>+ New Case</button>
         </div>
+
+        {message ? <div className="adminNotice">{message}</div> : null}
+
+        {showForm ? (
+          <section className="adminPanel caseEditor">
+            <div className="panelHead"><h2>{editingId ? "Edit Clinical Case" : "New Clinical Case"}</h2><button className="textButton" type="button" onClick={() => setShowForm(false)}>Close</button></div>
+            <form onSubmit={saveCase} className="caseForm">
+              <div className="formGrid">
+                <label>Title<input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value, slug: editingId ? form.slug : makeSlug(e.target.value) })} required /></label>
+                <label>Slug<input value={form.slug} onChange={(e) => setForm({ ...form, slug: makeSlug(e.target.value) })} required /></label>
+                <label>Category<input value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} placeholder="Retreatment, Instrument Retrieval..." /></label>
+                <label>Tooth<input value={form.tooth} onChange={(e) => setForm({ ...form, tooth: e.target.value })} placeholder="Mandibular First Molar" /></label>
+              </div>
+
+              <label>Summary<textarea value={form.summary} onChange={(e) => setForm({ ...form, summary: e.target.value })} rows={3} /></label>
+              <label>Diagnosis<textarea value={form.diagnosis} onChange={(e) => setForm({ ...form, diagnosis: e.target.value })} rows={4} /></label>
+              <label>Treatment sequence <small>Write one step per line.</small><textarea value={form.treatment} onChange={(e) => setForm({ ...form, treatment: e.target.value })} rows={7} /></label>
+              <label>Outcome<textarea value={form.outcome} onChange={(e) => setForm({ ...form, outcome: e.target.value })} rows={3} /></label>
+
+              <div className="formGrid">
+                <label>Status<select value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value as "draft" | "published" })}><option value="draft">Draft</option><option value="published">Published</option></select></label>
+                <label>Image type<select value={imageType} onChange={(e) => setImageType(e.target.value)}><option value="clinical">Clinical</option><option value="preop">Pre-op</option><option value="working">Working</option><option value="postop">Post-op</option><option value="followup">Follow-up</option></select></label>
+              </div>
+
+              <label className="uploadField">Case images<input type="file" accept="image/jpeg,image/png,image/webp" multiple onChange={(e) => setFiles(Array.from(e.target.files || []))} /><small>{files.length ? `${files.length} image(s) selected` : "JPG, PNG or WebP · maximum 10 MB each"}</small></label>
+
+              <label className="checkLabel"><input type="checkbox" checked={form.featured} onChange={(e) => setForm({ ...form, featured: e.target.checked })} /> Featured case</label>
+
+              <div className="editorActions"><button className="adminPrimary" type="submit" disabled={saving}>{saving ? "Saving..." : editingId ? "Save Changes" : "Create Case"}</button><button type="button" className="adminSecondary" onClick={() => setShowForm(false)}>Cancel</button></div>
+            </form>
+          </section>
+        ) : null}
 
         <div id="overview" className="adminStats">
           <article><span>Clinical cases</span><strong>{cases.length}</strong></article>
+          <article><span>Published</span><strong>{publishedCount}</strong></article>
           <article><span>Research notes</span><strong>{articles.length}</strong></article>
-          <article><span>Database</span><strong>LIVE</strong></article>
         </div>
 
         <section id="cases" className="adminPanel">
           <div className="panelHead"><h2>Clinical Cases</h2><span>Connected to Supabase</span></div>
-          {cases.length === 0 ? <p className="adminEmpty">No cases added yet.</p> : cases.map((item) => (
-            <div className="adminRow" key={item.id}>
+          {cases.length === 0 ? <p className="adminEmpty">No cases added yet. Click “New Case” to create your first one.</p> : cases.map((item) => (
+            <div className="adminRow caseAdminRow" key={item.id}>
               <div><b>{item.title}</b><small>{item.category || "Uncategorized"} · {item.tooth || "Tooth not set"}</small></div>
-              <span>{item.status}</span>
-              <button disabled>Edit</button>
+              <span className={`statusPill ${item.status}`}>{item.status}</span>
+              <div className="rowActions"><button onClick={() => startEdit(item)}>Edit</button><button onClick={() => togglePublish(item)}>{item.status === "published" ? "Unpublish" : "Publish"}</button><button className="dangerButton" onClick={() => deleteCase(item.id, item.title)}>Delete</button></div>
             </div>
           ))}
         </section>
 
         <section id="research" className="adminPanel">
-          <div className="panelHead"><h2>Research & Notes</h2><span>Connected to Supabase</span></div>
+          <div className="panelHead"><h2>Research & Notes</h2><span>Database ready</span></div>
           {articles.length === 0 ? <p className="adminEmpty">No research notes added yet.</p> : articles.map((item) => (
-            <div className="adminRow" key={item.id}>
-              <div><b>{item.title}</b><small>{item.category || "Uncategorized"}</small></div>
-              <span>{item.status}</span>
-              <button disabled>Edit</button>
-            </div>
+            <div className="adminRow" key={item.id}><div><b>{item.title}</b><small>{item.category || "Uncategorized"}</small></div><span>{item.status}</span><button disabled>Edit</button></div>
           ))}
         </section>
 
-        <section id="media" className="adminPanel emptyPanel">
-          <h2>Media Library</h2>
-          <p>Supabase Storage is ready. Upload controls will be enabled in the next step.</p>
-        </section>
+        <section id="media" className="adminPanel emptyPanel"><h2>Media Library</h2><p>Images uploaded with each case are stored securely in the Supabase <strong>case-images</strong> bucket.</p></section>
       </section>
     </main>
   );
