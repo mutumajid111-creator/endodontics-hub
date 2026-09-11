@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Brand from "@/components/Brand";
 
 const focusAreas = [
   ["01", "Complex Root Canal Treatment", "Diagnosis and conservative management of difficult canal anatomy."],
@@ -9,53 +10,36 @@ const focusAreas = [
   ["06", "Obturation", "Three-dimensional sealing with contemporary materials and techniques."],
 ];
 
-const cases = [
-  { slug: "separated-file-mesial-root", title: "Separated file in mesial root", tag: "Instrument Retrieval", status: "Case Study" },
-  { slug: "molar-nonsurgical-retreatment", title: "Molar nonsurgical retreatment", tag: "Retreatment", status: "Case Study" },
-  { slug: "calcified-anterior-canal", title: "Calcified anterior canal", tag: "Calcification", status: "Case Study" },
-];
-
-const articles = [
-  ["CLINICAL NOTE", "How large should we prepare the apical third?"],
-  ["TECHNIQUE", "Micro vs macro glide path: practical differences"],
-  ["EVIDENCE", "Modern NiTi shaping: what actually matters clinically?"],
+const benefits = [
+  ["Clinical Cases", "Step-by-step documentation of complex endodontic treatment and retreatment."],
+  ["Private Lectures", "Subscriber-only video lectures embedded inside the platform."],
+  ["Research Notes", "Evidence translated into practical clinical decisions."],
 ];
 
 export default function Home() {
-  return (
-    <main>
-      <header className="header">
-        <div className="shell nav">
-          <Link href="/" className="logo" aria-label="Endodontics Hub home"><span className="mark">E</span><span><strong>ENDODONTICS</strong><small>HUB · DR. MUTHANNA MAJID</small></span></Link>
-          <nav className="navlinks"><Link href="/cases">Cases</Link><a href="#education">Education</a><Link href="/research">Research</Link><a href="#about">About</a></nav>
-          <Link href="/admin" className="navcta">Admin</Link>
-        </div>
-      </header>
+  return <main>
+    <header className="header"><div className="shell nav"><Brand/><nav className="navlinks"><Link href="/cases">Cases</Link><Link href="/lectures">Lectures</Link><Link href="/research">Research</Link><Link href="/pricing">Membership</Link></nav><Link href="/member/login" className="navcta">Member sign in</Link></div></header>
 
-      <section id="home" className="hero shell">
-        <div className="heroCopy">
-          <div className="kicker"><span></span> MODERN CLINICAL ENDODONTICS</div>
-          <h1>Preserve the tooth.<br/><em>Understand the canal.</em></h1>
-          <p className="lead">A focused platform for clinical cases, endodontic education, evidence-based protocols and practical decision-making.</p>
-          <div className="heroActions"><Link href="/cases" className="btn primary">Explore Clinical Cases</Link><a href="#education" className="btn secondary">Learn Endodontics</a></div>
-          <div className="metrics"><div><strong>Microscope</strong><span>assisted workflow</span></div><div><strong>Evidence</strong><span>based protocols</span></div><div><strong>Digital</strong><span>clinical documentation</span></div></div>
-        </div>
+    <section className="hero shell">
+      <div className="heroCopy">
+        <div className="kicker">DR. MUTHANNA MAJID · ENDODONTICS</div>
+        <h1>Clinical endodontics.<br/><em>Built for dentists.</em></h1>
+        <p className="lead">A premium educational platform for real cases, private lectures, clinical protocols and evidence-based decision making.</p>
+        <div className="heroActions"><Link href="/pricing" className="btn primary">Join the membership</Link><Link href="/cases" className="btn secondary">Explore clinical cases</Link></div>
+        <div className="metrics"><div><strong>Cases</strong><span>REAL CLINICAL WORK</span></div><div><strong>Lectures</strong><span>PRIVATE VIDEO LIBRARY</span></div><div><strong>Research</strong><span>EVIDENCE TO PRACTICE</span></div></div>
+      </div>
+      <div className="heroArt" aria-label="Root canal visual"><div className="gridlines"></div><div className="toothCard"><div className="toothCrown"></div><div className="root root1"><i></i></div><div className="root root2"><i></i></div><div className="root root3"><i></i></div></div><div className="microLabel"><b>M</b><span>PRECISION<br/>MICROSCOPY<br/>ENDODONTICS</span></div></div>
+    </section>
 
-        <div className="heroArt" aria-label="Endodontic canal illustration"><div className="gridlines"></div><div className="toothCard"><div className="toothCrown"></div><div className="root root1"><i></i></div><div className="root root2"><i></i></div><div className="root root3"><i></i></div><div className="apexDot one"></div><div className="apexDot two"></div></div><div className="microLabel"><b>01</b><span>ANATOMY<br/>DRIVES<br/>SHAPING</span></div></div>
-      </section>
+    <section className="band"><div className="shell bandInner"><span>DIAGNOSIS</span><i></i><span>ACCESS</span><i></i><span>GLIDE PATH</span><i></i><span>SHAPING</span><i></i><span>DISINFECTION</span><i></i><span>OBTURATION</span></div></section>
 
-      <section className="band"><div className="shell bandInner"><span>DIAGNOSIS</span><i></i><span>ACCESS</span><i></i><span>GLIDE PATH</span><i></i><span>SHAPING</span><i></i><span>DISINFECTION</span><i></i><span>OBTURATION</span></div></section>
+    <section className="section shell"><div className="sectionIntro"><div><p className="eyebrow">MEMBERSHIP CONTENT</p><h2>Everything in one focused Endodontics platform.</h2></div><p>New premium material can be released continuously while your membership stays active.</p></div><div className="focusGrid">{benefits.map(([title,desc],i)=><article className="focusCard" key={title}><span>0{i+1}</span><h3>{title}</h3><p>{desc}</p><Link href={i===0?"/cases":i===1?"/lectures":"/research"}>Explore →</Link></article>)}</div></section>
 
-      <section id="education" className="section shell"><div className="sectionIntro"><div><p className="eyebrow">CLINICAL FOCUS</p><h2>Endodontics, organized around real clinical decisions.</h2></div><p>From access to obturation, each topic is built around the steps that change treatment quality in daily practice.</p></div><div className="focusGrid">{focusAreas.map(([n,t,d]) => <article key={n} className="focusCard"><span>{n}</span><h3>{t}</h3><p>{d}</p><Link href="/research">Explore topic ↗</Link></article>)}</div></section>
+    <section className="dark"><div className="shell section"><div className="sectionIntro"><div><p className="eyebrow gold">CLINICAL FOCUS</p><h2>Structured around the decisions that matter.</h2></div><p>From difficult anatomy to separated instruments, content is organized for daily chairside relevance.</p></div><div className="focusGrid">{focusAreas.map(([n,t,d])=><article className="focusCard" key={n}><span>{n}</span><h3>{t}</h3><p>{d}</p><Link href="/pricing">Unlock full access →</Link></article>)}</div></div></section>
 
-      <section id="cases" className="dark"><div className="shell section"><div className="sectionIntro light"><div><p className="eyebrow gold">CLINICAL CASE LIBRARY</p><h2>Real cases. Clear reasoning.</h2></div><p>Cases include diagnosis, treatment sequence, technical notes and outcome, with clinical imaging added through the admin workflow.</p></div><div className="caseGrid">{cases.map((c, i) => <article className="caseCard" key={c.title}><div className="caseVisual"><span>{String(i+1).padStart(2,"0")}</span><div className="xrayTooth"><b></b><b></b><b></b></div></div><div className="caseMeta"><span>{c.status}</span><span>{c.tag}</span></div><h3>{c.title}</h3><Link href={`/cases/${c.slug}`}>Open case →</Link></article>)}</div><div className="sectionAction"><Link href="/cases" className="btn secondary lightButton">View all clinical cases</Link></div></div></section>
+    <section className="about"><div className="shell aboutGrid"><div><p className="eyebrow gold">ABOUT THE PLATFORM</p><h2>Dr. Muthanna<br/>Majid Shayal</h2></div><div className="aboutText"><p className="big">Dentist and clinical researcher focused on Endodontics, microscope-assisted treatment and digital dentistry.</p><p>The platform combines real clinical documentation with structured education for dentists who want practical, modern Endodontics.</p><div className="chips"><span>Endodontics</span><span>Microscopy</span><span>Clinical Research</span><span>Digital Dentistry</span></div><div className="heroActions"><Link href="/pricing" className="btn primary">View membership plans</Link><Link href="/register" className="btn secondary">Create account</Link></div></div></div></section>
 
-      <section id="research" className="section shell"><div className="sectionIntro"><div><p className="eyebrow">RESEARCH & NOTES</p><h2>Evidence translated into clinical practice.</h2></div><p>Concise summaries and practical notes connecting current literature with chairside endodontics.</p></div><div className="articles">{articles.map(([tag,title],i)=><article key={title}><span>{tag}</span><h3>{title}</h3><div className="articleFoot"><b>0{i+1}</b><Link href="/research">Read note ↗</Link></div></article>)}</div></section>
-
-      <section id="about" className="about"><div className="shell aboutGrid"><div><p className="eyebrow gold">ABOUT</p><h2>Dr. Muthanna<br/>Majid Shayal</h2></div><div className="aboutText"><p className="big">Dentist and clinical researcher focused on Endodontics, microscope-assisted treatment and digital dentistry.</p><p>This independent platform is designed to document clinical cases, organize practical endodontic knowledge and create a growing educational resource for dentists.</p><div className="chips"><span>Endodontics</span><span>Clinical Research</span><span>Digital Dentistry</span><span>Microscopy</span></div></div></div></section>
-
-      <section id="contact" className="contact shell"><p className="eyebrow">COLLABORATION · EDUCATION · CASE DISCUSSION</p><h2>Build better endodontics.</h2><p>For lectures, professional collaboration, clinical education and research.</p><Link href="/research" className="btn primary">Explore the platform</Link></section>
-      <footer><div className="shell footerInner"><div>ENDODONTICS HUB</div><span>Dr. Muthanna Majid Shayal · Maysan, Iraq</span><span>© 2026</span></div></footer>
-    </main>
-  );
+    <section className="contact shell"><p className="eyebrow">MONTHLY · ANNUAL · QI CARD</p><h2>Learn. Review. Apply.</h2><p>Join once and access subscriber clinical cases, lectures and future premium releases from your account.</p><Link href="/pricing" className="btn primary">Start membership</Link></section>
+    <footer><div className="shell footerInner"><div>DR. MUTHANNA MAJID · ENDODONTICS</div><span>Clinical education platform · Iraq</span><span>© 2026</span></div></footer>
+  </main>;
 }
