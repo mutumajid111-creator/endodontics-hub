@@ -2,18 +2,25 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import Brand from "@/components/Brand";
 import { supabase } from "@/lib/supabase";
 
 type Plan={id:string;code:string;name:string;interval:string;price_amount:number|null;currency:string};
 
 export default function PricingPage(){
  const [plans,setPlans]=useState<Plan[]>([]);
- useEffect(()=>{void supabase.from("subscription_plans").select("id,code,name,interval,price_amount,currency").eq("active",true).then(({data})=>setPlans((data||[]) as Plan[]));},[]);
- return <main>
-  <header className="header"><div className="shell nav"><Link href="/" className="logo"><span className="mark">M</span><span><strong>DR. MUTHANNA MAJID</strong><small>ENDODONTICS MEMBERSHIP</small></span></Link><nav className="navlinks"><Link href="/cases">Cases</Link><Link href="/lectures">Lectures</Link><Link href="/research">Research</Link></nav><Link href="/member/login" className="navcta">Sign in</Link></div></header>
-  <section className="pageHero shell"><p className="eyebrow">MEMBERSHIP</p><h1>Unlock the complete Endodontics library.</h1><p>Access subscriber-only clinical cases, lectures, videos and future premium educational content.</p></section>
-  <section className="shell" style={{padding:"40px 0 110px",display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(280px,1fr))",gap:24}}>
-   {plans.map(plan=><article key={plan.id} style={{background:"#fff",border:"1px solid #d9e0dc",padding:32,borderRadius:16}}><p className="eyebrow">{plan.interval.toUpperCase()}</p><h2 style={{font:"32px Georgia,serif"}}>{plan.name}</h2><div style={{font:"42px Georgia,serif",margin:"20px 0"}}>{plan.price_amount==null?"Price set by admin":`${Number(plan.price_amount).toLocaleString()} ${plan.currency}`}</div><p>Full access to subscriber cases, lecture videos, research notes and new premium releases.</p><Link href={`/checkout/qi?plan=${plan.code}`} className="btn primary" style={{marginTop:18}}>Subscribe with Qi Card</Link></article>)}
+ useEffect(()=>{void supabase.from("subscription_plans").select("id,code,name,interval,price_amount,currency").eq("active",true).order("interval").then(({data})=>setPlans((data||[]) as Plan[]));},[]);
+ return <main className="memberPage">
+  <header className="memberHeader"><div className="shell memberNav"><Brand/><nav className="navlinks"><Link href="/cases">Cases</Link><Link href="/lectures">Lectures</Link><Link href="/research">Research</Link></nav><Link href="/member/login" className="navcta">Sign in</Link></div></header>
+  <section className="memberHero shell"><p className="eyebrow">MEMBERSHIP</p><h1>One membership. The complete Endodontics library.</h1><p>Subscriber access includes premium clinical cases, private video lectures, research notes and all new membership content released while your plan is active.</p></section>
+  <section className="shell pricingGrid">
+   {plans.map((plan,index)=><article key={plan.id} className={`pricingCard ${plan.code==="annual"?"featured":""}`}>
+    <p className="eyebrow">{plan.interval.toUpperCase()}</p><h2>{plan.name}</h2>
+    <div className="priceValue">{plan.price_amount==null?"—":Number(plan.price_amount).toLocaleString()} <small>{plan.currency}{plan.price_amount!=null?` / ${plan.interval}`:""}</small></div>
+    <ul className="pricingFeatures"><li>Subscriber clinical cases</li><li>Private Endodontics lectures</li><li>Research and clinical notes</li><li>New premium releases</li><li>Member account and access status</li></ul>
+    <Link href={`/checkout/qi?plan=${plan.code}`} className="btn primary fullButton">Subscribe with Qi Card</Link>
+    {plan.code==="annual"&&<p className="formHint" style={{marginTop:12}}>Recommended for continuous access throughout the year.</p>}
+   </article>)}
   </section>
  </main>;
 }
