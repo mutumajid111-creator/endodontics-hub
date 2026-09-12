@@ -1,5 +1,5 @@
 import Link from "next/link";
-import Brand from "@/components/Brand";
+import SiteHeader from "@/components/SiteHeader";
 import { createPublicSupabaseClient } from "@/lib/supabase-public";
 
 export const metadata={title:"Research & Clinical Notes | Dr. Muthanna Majid"};
@@ -12,7 +12,7 @@ export default async function ResearchPage(){
  const {data}=await supabase.from("article_catalog").select("id,slug,title,excerpt,category,published_at,access_level").order("published_at",{ascending:false,nullsFirst:false});
  const notes=(data||[]) as ResearchNote[];
  return <main>
-  <header className="header"><div className="shell nav"><Brand/><nav className="navlinks"><Link href="/cases">Cases</Link><Link href="/lectures">Lectures</Link><Link href="/research">Research</Link><Link href="/pricing">Membership</Link></nav><Link href="/account" className="navcta">My account</Link></div></header>
+  <SiteHeader/>
   <section className="pageHero shell"><p className="eyebrow">RESEARCH & CLINICAL NOTES</p><h1>Evidence for everyday Endodontics.</h1><p>Practical notes that connect published evidence with chairside clinical decisions.</p></section>
   <section className="shell researchList">{notes.length===0?<div className="emptyPremium"><h2>No published notes yet.</h2><p>New research and clinical notes will appear here.</p></div>:notes.map((item,i)=><article key={item.id}><span>{String(i+1).padStart(2,"0")}</span><div><small>{item.category||"RESEARCH"}</small><h2>{item.title}</h2><p>{item.excerpt||"Clinical note"}</p></div>{item.access_level==="subscriber"?<Link href="/pricing">🔒 Member</Link>:<b>Free</b>}</article>)}</section>
  </main>;
