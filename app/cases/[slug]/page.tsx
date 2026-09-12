@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import Brand from "@/components/Brand";
 import { supabase } from "@/lib/supabase";
+import { ensureThisDevice, isCurrentDevice } from "@/lib/device-session";
 import styles from "./case.module.css";
 
 type CatalogRow={id:string;title:string;slug:string;summary:string|null;category:string|null;tooth:string|null;access_level:"free"|"subscriber"};
@@ -14,19 +15,25 @@ type CaseImage={id:string;image_path:string;image_type:string;caption:string|nul
 export default function CaseDetailPage(){
  const params=useParams<{slug:string}>(); const router=useRouter();
  const [catalog,setCatalog]=useState<CatalogRow|null>(null); const [item,setItem]=useState<CaseRow|null>(null); const [images,setImages]=useState<CaseImage[]>([]); const [loading,setLoading]=useState(true); const [locked,setLocked]=useState(false);
- useEffect(()=>{async function load(){
+ useEffect(()=>{let timer:ReturnType<typeof setInterval>|undefined;async function load(){
    const slug=String(params.slug||"");
+   const next=`/cases/${slug}`;
+   async function kick(){await supabase.auth.signOut();router.replace(`/member/login?next=${encodeURIComponent(next)}`);router.refresh();}
    const {data:meta}=await supabase.from("case_catalog").select("id,title,slug,summary,category,tooth,access_level").eq("slug",slug).maybeSingle();
    if(!meta){setLoading(false);return;} setCatalog(meta as CatalogRow);
    const {data:{user}}=await supabase.auth.getUser();
-   if(meta.access_level==="subscriber"&&!user){router.replace(`/member/login?next=${encodeURIComponent(`/cases/${slug}`)}`);return;}
+   if(meta.access_level==="subscriber"){
+     if(!user){router.replace(`/member/login?next=${encodeURIComponent(next)}`);return;}
+     if(!(await ensureThisDevice())){await kick();return;}
+     timer=setInterval(async()=>{if(!(await isCurrentDevice()))await kick();},30000);
+   }
    const {data:full}=await supabase.from("cases").select("id,title,slug,summary,diagnosis,treatment,outcome,category,tooth,access_level").eq("slug",slug).eq("status","published").maybeSingle();
    if(!full){setLocked(meta.access_level==="subscriber");setLoading(false);return;}
    setItem(full as CaseRow);
    const {data:media}=await supabase.from("case_images").select("id,image_path,image_type,caption,sort_order").eq("case_id",full.id).order("sort_order");
    const signed=await Promise.all(((media||[]) as CaseImage[]).map(async image=>{const {data}=await supabase.storage.from("case-images").createSignedUrl(image.image_path,3600);return {...image,url:data?.signedUrl};}));
    setImages(signed); setLoading(false);
- } void load();},[params.slug,router]);
+ } void load();return()=>{if(timer)clearInterval(timer);};},[params.slug,router]);
 
  if(loading)return <main className="memberLoading">Loading clinical case...</main>;
  if(!catalog)return <main className="memberLoading"><div><h1>Case not found</h1><Link href="/cases">Back to cases</Link></div></main>;
