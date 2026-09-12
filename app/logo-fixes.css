@@ -1,4 +1,16 @@
 /* Logo visibility fixes */
 .contact .signatureMark{display:block;width:min(520px,86%);height:auto;margin:0 auto 34px;padding:26px 32px;background:linear-gradient(135deg,#0f1d48,#1b2b68);border:1px solid rgba(212,175,75,.45);border-radius:20px;box-shadow:0 22px 55px rgba(23,37,84,.18);filter:none!important;opacity:1!important;object-fit:contain}
 .contact{position:relative}.contact:before{content:"";position:absolute;left:50%;top:52px;width:120px;height:3px;transform:translateX(-50%);background:linear-gradient(90deg,transparent,#d4af4b,transparent)}
-@media(max-width:650px){.contact .signatureMark{width:100%;padding:20px 18px;border-radius:16px;margin-bottom:28px}}
+
+.adminAddOverlay{position:fixed;inset:0;z-index:999;background:rgba(9,16,40,.62);backdrop-filter:blur(10px);display:grid;place-items:center;padding:24px}
+.adminAddModal{position:relative;width:min(720px,100%);background:#fff;border:1px solid #e5dfd2;border-radius:28px;padding:38px;box-shadow:0 32px 90px rgba(13,24,61,.3)}
+.adminAddModal h2{font:600 clamp(30px,5vw,44px)/1.08 Georgia,serif;color:#172554;margin:5px 0 10px}
+.adminAddLead{color:#6b7280;margin:0 0 26px;line-height:1.7}
+.adminAddClose{position:absolute;right:20px;top:16px;width:42px;height:42px;border:0;border-radius:50%;background:#f3f0e9;color:#172554;font-size:28px;line-height:1;cursor:pointer}
+.adminAddChoices{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.adminAddChoice{display:flex;align-items:flex-start;gap:14px;text-decoration:none;padding:20px;border:1px solid #e3ded3;border-radius:18px;background:#fbfaf7;color:#172554;transition:.2s ease}
+.adminAddChoice:hover{transform:translateY(-3px);border-color:#d4af4b;box-shadow:0 14px 34px rgba(23,37,84,.10)}
+.adminAddChoice>span{width:42px;height:42px;display:grid;place-items:center;flex:0 0 42px;border-radius:12px;background:#172554;color:#efd77f;font-size:18px}
+.adminAddChoice strong{display:block;font-size:15px;margin:2px 0 7px}.adminAddChoice small{display:block;color:#6b7280;line-height:1.45;font-size:12px}
+
+@media(max-width:650px){.contact .signatureMark{width:100%;padding:20px 18px;border-radius:16px;margin-bottom:28px}.adminAddModal{padding:30px 20px 22px;border-radius:22px}.adminAddChoices{grid-template-columns:1fr}.adminAddChoice{padding:17px}}
