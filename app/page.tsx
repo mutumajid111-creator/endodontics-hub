@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Brand from "@/components/Brand";
+import SiteHeader from "@/components/SiteHeader";
 
 const focusAreas = [
   ["01", "Complex Root Canal Treatment", "Diagnosis and conservative management of difficult canal anatomy."],
@@ -25,7 +26,7 @@ const articles = [
 export default function Home() {
   return (
     <main>
-      <header className="header"><div className="shell nav"><Brand/><nav className="navlinks"><Link href="/cases">Cases</Link><Link href="/lectures">Lectures</Link><Link href="/research">Research</Link><Link href="/pricing">Membership</Link></nav><Link href="/account" className="navcta">My account</Link></div></header>
+      <SiteHeader/>
 
       <section id="home" className="hero shell">
         <div className="heroCopy">
