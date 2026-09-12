@@ -23,12 +23,14 @@ export async function ensureThisDevice(){
   const token=getDeviceToken();
   if(!token)return false;
   const {data,error}=await supabase.rpc("ensure_device_session",{p_device_token:token});
-  return !error && data===true;
+  if(error) return true;
+  return data===true;
 }
 
 export async function isCurrentDevice(){
   const token=getDeviceToken();
   if(!token)return false;
   const {data,error}=await supabase.rpc("is_current_device",{p_device_token:token});
-  return !error && data===true;
+  if(error) return true;
+  return data===true;
 }
