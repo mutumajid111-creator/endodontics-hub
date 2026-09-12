@@ -1,0 +1,17 @@
+"use client";
+
+import Link from "next/link";
+import { FormEvent, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import Brand from "@/components/Brand";
+import { supabase } from "@/lib/supabase";
+
+function slugify(v:string){return v.toLowerCase().trim().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");}
+function drivePreview(url:string){const m=url.match(/\/d\/([^/]+)/)||url.match(/[?&]id=([^&]+)/);return m?.[1]?`https://drive.google.com/file/d/${m[1]}/preview`:url;}
+
+export default function AdminResearchPage(){
+ const router=useRouter();const [message,setMessage]=useState("");const [preview,setPreview]=useState("");
+ useEffect(()=>{(async()=>{const {data:{user}}=await supabase.auth.getUser();if(!user){router.replace("/admin/login");return;}const {data:p}=await supabase.from("profiles").select("role").eq("user_id",user.id).maybeSingle();if(p?.role!=="admin")router.replace("/");})();},[router]);
+ async function submit(e:FormEvent<HTMLFormElement>){e.preventDefault();const f=new FormData(e.currentTarget);const title=String(f.get("title")||"").trim();const url=String(f.get("drive")||"").trim();const excerpt=String(f.get("description")||"").trim();const category=String(f.get("category")||"Research").trim()||"Research";const status=String(f.get("status")||"draft");if(!title||!url){setMessage("Enter the research title and Google Drive link.");return;}const {error}=await supabase.from("articles").insert({title,slug:slugify(title),excerpt,content:url,category,status,access_level:"subscriber",published_at:status==="published"?new Date().toISOString():null});if(error){setMessage(error.message);return;}setMessage("Research saved.");setPreview(drivePreview(url));e.currentTarget.reset();}
+ return <main className="adminPremiumPage"><header className="memberHeader"><div className="shell memberNav"><Brand href="/admin" compact/><Link href="/admin" className="navcta">Admin dashboard</Link></div></header><section className="shell adminPremiumHero"><p className="eyebrow">ADMIN · RESEARCH</p><h1>Add Google Drive research</h1><p>Keep the PDF in Google Drive, paste the sharing link, and subscribers will open it inside the website instead of leaving the platform.</p></section><section className="shell" style={{padding:"36px 0 100px"}}>{message&&<div className="formNotice" style={{marginBottom:18}}>{message}</div>}<article className="accountCard" style={{maxWidth:820}}><form className="memberForm" onSubmit={submit}><label>Research title<input name="title" required placeholder="Research title"/></label><label>Category<input name="category" placeholder="Shaping, Irrigation, Obturation..."/></label><label>Summary<textarea name="description" rows={4} placeholder="Short clinical summary"/></label><label>Google Drive PDF link<input name="drive" required placeholder="https://drive.google.com/file/d/.../view" onChange={e=>setPreview(drivePreview(e.target.value))}/><small>Set the Drive file to Anyone with the link → Viewer.</small></label><label>Status<select name="status" defaultValue="published"><option value="draft">Draft</option><option value="published">Published</option></select></label><button className="btn primary" type="submit">Save Research</button></form></article>{preview&&<article className="accountCard" style={{marginTop:24}}><h2>Preview</h2><iframe src={preview} style={{width:"100%",height:"70vh",border:0,borderRadius:16}} allow="autoplay"/></article>}</section></main>;
+}
