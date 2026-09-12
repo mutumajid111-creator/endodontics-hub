@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import Brand from "@/components/Brand";
 import QiQr, { QI_MERCHANT_URL } from "@/components/QiQr";
 import { supabase } from "@/lib/supabase";
+import { ensureThisDevice } from "@/lib/device-session";
 
 type Plan={id:string;code:string;name:string;interval:string;price_amount:number|null;currency:string};
 
@@ -21,8 +22,11 @@ export default function QiCheckoutPage(){
 
  useEffect(()=>{async function load(){
    const code=new URLSearchParams(window.location.search).get("plan")||"monthly";
+   const next=`/checkout/qi?plan=${code}`;
    const {data:{user}}=await supabase.auth.getUser();
-   if(!user){router.replace(`/member/login?next=${encodeURIComponent(`/checkout/qi?plan=${code}`)}`);return;}
+   if(!user){router.replace(`/member/login?next=${encodeURIComponent(next)}`);return;}
+   const validDevice=await ensureThisDevice();
+   if(!validDevice){await supabase.auth.signOut();router.replace(`/member/login?next=${encodeURIComponent(next)}`);return;}
    const {data}=await supabase.from("subscription_plans").select("id,code,name,interval,price_amount,currency").eq("code",code).eq("active",true).maybeSingle();
    setPlan((data as Plan|null)||null); setLoading(false);
  } void load();},[router]);
@@ -33,6 +37,7 @@ export default function QiCheckoutPage(){
    setSaving(true); setMessage("");
    try{
      const {data:{user}}=await supabase.auth.getUser(); if(!user) throw new Error("Please sign in again.");
+     const validDevice=await ensureThisDevice(); if(!validDevice) throw new Error("This account is active on another device. Please sign in again on this device.");
      const {data:tx,error:txError}=await supabase.from("payment_transactions").insert({user_id:user.id,plan_id:plan.id,provider:"qicard_qr",amount:plan.price_amount,currency:plan.currency,status:"pending",payer_reference:reference.trim()||null}).select("id").single();
      if(txError) throw txError;
      if(proof){
