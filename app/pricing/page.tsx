@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Brand from "@/components/Brand";
 import { supabase } from "@/lib/supabase";
+import { ensureThisDevice } from "@/lib/device-session";
 
 type Plan={id:string;code:string;name:string;interval:string;price_amount:number|null;currency:string};
 
@@ -16,10 +17,9 @@ export default function PricingPage(){
 
  useEffect(()=>{async function load(){
    const {data:{user}}=await supabase.auth.getUser();
-   if(!user){
-     router.replace(`/member/login?next=${encodeURIComponent("/pricing")}`);
-     return;
-   }
+   if(!user){router.replace(`/member/login?next=${encodeURIComponent("/pricing")}`);return;}
+   const validDevice=await ensureThisDevice();
+   if(!validDevice){await supabase.auth.signOut();router.replace(`/member/login?next=${encodeURIComponent("/pricing")}`);return;}
    setEmail(user.email||"");
    const {data}=await supabase.from("subscription_plans").select("id,code,name,interval,price_amount,currency").eq("active",true).order("interval");
    setPlans((data||[]) as Plan[]);
