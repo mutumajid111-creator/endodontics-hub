@@ -32,7 +32,9 @@ export default function QiCheckoutPage(){
  } void load();},[router]);
 
  async function submit(e:FormEvent<HTMLFormElement>){
-   e.preventDefault(); if(!plan || plan.price_amount==null)return;
+   e.preventDefault();
+   if(!plan)return;
+   if(plan.price_amount==null){setMessage("This plan does not have a price yet. Please contact the administrator.");return;}
    if(!reference.trim() && !proof){setMessage("Enter the Qi transaction/reference number or upload a payment proof.");return;}
    setSaving(true); setMessage("");
    try{
@@ -63,22 +65,30 @@ export default function QiCheckoutPage(){
     <article className="qiPaymentCard">
       <div className="qiTitle"><span>Qi</span><div><strong>Scan To Pay</strong><small>عيادة الدكتور مثنى ماجد شيال</small></div></div>
       <QiQr/>
-      <div className="payAmount"><small>AMOUNT</small><strong>{plan.price_amount==null?"Set by admin":`${Number(plan.price_amount).toLocaleString()} ${plan.currency}`}</strong></div>
+      <div className="payAmount"><small>AMOUNT</small><strong>{plan.price_amount==null?"Price not set":`${Number(plan.price_amount).toLocaleString()} ${plan.currency}`}</strong></div>
       <a className="qiOpenButton" href={QI_MERCHANT_URL} target="_blank" rel="noreferrer">Open Qi payment link</a>
     </article>
 
     <article className="paymentProofCard">
-      {done ? <div className="paymentSuccess"><span>✓</span><h2>Payment sent for review</h2><p>Your request is now pending. When the payment is confirmed, the membership will activate automatically.</p><div className="memberActions"><Link href="/account" className="btn primary">View my account</Link><Link href="/" className="btn secondary">Home</Link></div></div> : <>
-        <p className="eyebrow">STEP 2</p><h2>Confirm your payment</h2><p>After paying, enter the transaction/reference number. You can also upload a screenshot or PDF as proof.</p>
-        <form className="memberForm" onSubmit={submit}>
-          <label>Transaction / reference number<input value={reference} onChange={e=>setReference(e.target.value)} placeholder="Example: Qi transaction number"/></label>
-          <label>Payment proof<input type="file" accept="image/jpeg,image/png,image/webp,application/pdf" onChange={e=>setProof(e.target.files?.[0]||null)}/><small>JPG, PNG, WebP or PDF · max 10 MB</small></label>
-          {message&&<div className="formNotice error">{message}</div>}
-          <button className="btn primary fullButton" type="submit" disabled={saving||plan.price_amount==null}>{saving?"Submitting...":"I paid — send for approval"}</button>
-          {plan.price_amount==null&&<p className="formHint">The membership price must be set by the administrator before payment can be submitted.</p>}
-        </form>
-      </>}
+      <p className="eyebrow">STEP 2</p><h2>Confirm your payment</h2><p>After paying, enter the transaction/reference number. You can also upload a screenshot or PDF as proof.</p>
+      <form className="memberForm" onSubmit={submit}>
+        <label>Transaction / reference number<input value={reference} onChange={e=>setReference(e.target.value)} placeholder="Example: Qi transaction number"/></label>
+        <label>Payment proof<input type="file" accept="image/jpeg,image/png,image/webp,application/pdf" onChange={e=>setProof(e.target.files?.[0]||null)}/><small>JPG, PNG, WebP or PDF · max 10 MB</small></label>
+        {message&&<div className="formNotice error">{message}</div>}
+        <button className="btn primary fullButton" type="submit" disabled={saving}>{saving?"Submitting...":"I paid — send for approval"}</button>
+        {plan.price_amount==null&&<div className="formNotice error" style={{marginTop:12}}>Subscription price has not been set by the administrator yet, so a request cannot be submitted.</div>}
+      </form>
     </article>
   </section>
+
+  {done&&<div style={{position:"fixed",inset:0,background:"rgba(2,10,18,.78)",display:"grid",placeItems:"center",zIndex:9999,padding:20}}>
+    <div style={{width:"min(520px,100%)",background:"#fff",color:"#0b2338",borderRadius:22,padding:"36px 30px",textAlign:"center",boxShadow:"0 30px 90px rgba(0,0,0,.35)"}}>
+      <div style={{width:64,height:64,borderRadius:"50%",display:"grid",placeItems:"center",margin:"0 auto 18px",background:"#e9f7ef",fontSize:30}}>✓</div>
+      <p className="eyebrow">REQUEST RECEIVED</p>
+      <h2 style={{fontSize:30,margin:"8px 0 12px"}}>Your subscription request was sent.</h2>
+      <p style={{lineHeight:1.7}}>Your payment is now waiting for administrator approval. Once approved, your membership will become active automatically.</p>
+      <div className="memberActions" style={{justifyContent:"center",marginTop:24}}><Link href="/account" className="btn primary">View my account</Link><Link href="/" className="btn secondary">Home</Link></div>
+    </div>
+  </div>}
  </main>;
 }
