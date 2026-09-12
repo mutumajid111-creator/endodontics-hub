@@ -1,5 +1,5 @@
 import Link from "next/link";
-import Brand from "@/components/Brand";
+import SiteHeader from "@/components/SiteHeader";
 import { createPublicSupabaseClient } from "@/lib/supabase-public";
 
 export const metadata = { title: "Clinical Cases | Dr. Muthanna Majid" };
@@ -10,7 +10,7 @@ export default async function CasesPage() {
   const { data: cases } = await supabase.from("case_catalog").select("id,title,slug,summary,category,tooth,access_level,published_at").order("published_at", { ascending: false });
 
   return <main className="casesExperience">
-    <header className="header"><div className="shell nav"><Brand/><nav className="navlinks"><Link href="/cases">Cases</Link><Link href="/lectures">Lectures</Link><Link href="/research">Research</Link><Link href="/pricing">Membership</Link></nav><Link href="/account" className="navcta">My account</Link></div></header>
+    <SiteHeader/>
     <section className="casesHero shell"><div><p className="eyebrow">CASE ARCHIVE · DR. MUTHANNA MAJID</p><h1>Clinical endodontics,<br/><em>documented with purpose.</em></h1><p>Diagnosis, treatment sequence and clinical decisions presented as a clean visual archive for serious endodontic learning.</p></div><div className="casesHeroStat"><strong>{String(cases?.length||0).padStart(2,"0")}</strong><span>PUBLISHED<br/>CASES</span></div></section>
     <section className="shell casesEditorial">
       {!cases?.length ? <div className="emptyPremium"><h2>No published cases yet.</h2><p>New cases will appear here automatically.</p></div> : cases.map((c,i)=><article className="caseEditorialCard" key={c.id}>
