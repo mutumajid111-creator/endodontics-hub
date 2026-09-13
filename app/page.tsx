@@ -63,39 +63,36 @@ export default async function Home() {
         <div className="resourceGrid">
           <article className="resourceCard">
             <div className="resourceMedia lectureMedia">
-              <span className="resourceIcon">▶</span>
-              <div className="screen"><b>Knowledge<br/>to Practice</b></div>
+              <span className="resourceIcon" aria-hidden="true">▶</span>
+              <Image src="/resource-lectures.webp" alt="Illustrative endodontic learning workspace with a laptop and reference notes" fill sizes="(max-width: 900px) 94vw, 33vw" className="resourcePhoto" />
             </div>
             <div className="resourceBody">
               <h2>Lectures</h2>
               <p>High-quality lectures covering the full spectrum of modern endodontics.</p>
-              <div className="miniThumbRow lectureThumbs"><i></i><i></i><i></i><i></i></div>
               <div className="resourceFoot"><Link href="/lectures">Explore Lectures →</Link><span>{latestLecture}</span></div>
             </div>
           </article>
 
           <article className="resourceCard">
             <div className="resourceMedia caseMedia">
-              <span className="resourceIcon">●</span>
-              <div className="miniXrays"><i></i><i></i><i></i></div>
+              <span className="resourceIcon" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M9 3H5v18h14V3h-4M9 2h6v4H9zM8 12h8M12 8v8"/></svg></span>
+              <Image src="/resource-cases.webp" alt="Endodontic files and dental mirror arranged on a clinical instrument tray" fill sizes="(max-width: 900px) 94vw, 33vw" className="resourcePhoto" />
             </div>
             <div className="resourceBody">
               <h2>Clinical Cases</h2>
               <p>Step-by-step real cases with clear diagnosis, treatment planning and outcomes.</p>
-              <div className="miniThumbRow caseThumbs"><i></i><i></i><i></i><i></i></div>
               <div className="resourceFoot"><Link href="/cases">Explore Cases →</Link><span>{latestCase}</span></div>
             </div>
           </article>
 
           <article className="resourceCard">
             <div className="resourceMedia bookMedia">
-              <span className="resourceIcon">▤</span>
-              <div className="booksPile"><i></i><i></i><i></i></div>
+              <span className="resourceIcon" aria-hidden="true">▤</span>
+              <Image src="/resource-books.webp" alt="Navy reference books and an open volume under warm reading light" fill sizes="(max-width: 900px) 94vw, 33vw" className="resourcePhoto" />
             </div>
             <div className="resourceBody">
               <h2>Books</h2>
               <p>Essential books and references for evidence-based endodontic practice.</p>
-              <div className="miniThumbRow bookThumbs"><i></i><i></i><i></i><i></i></div>
               <div className="resourceFoot"><Link href="/books">Explore Books →</Link><span>{latestBook}</span></div>
             </div>
           </article>
@@ -126,13 +123,9 @@ export default async function Home() {
         .resourceSection{padding:18px 0 50px}
         .resourceGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
         .resourceCard{overflow:hidden;border:1px solid #e4ded2;border-radius:9px;background:#fff;box-shadow:0 16px 40px #17244b0a}
-        .resourceMedia{height:145px;position:relative;overflow:hidden}.resourceIcon{position:absolute;z-index:4;left:18px;top:18px;width:38px;height:38px;border-radius:50%;display:grid;place-items:center;background:#c08b19;color:white;font-weight:800}
-        .lectureMedia{background:linear-gradient(90deg,#f7f7f4 0%,#e8edf3 48%,#1c385f 100%)}.screen{position:absolute;right:9%;top:24px;width:48%;height:92px;border:5px solid #2b3547;background:linear-gradient(180deg,#265083,#17345d);display:grid;place-items:center;color:white;text-align:center;font:600 16px/1.15 'Playfair Display';box-shadow:0 12px 22px #0003}
-        .caseMedia{background:linear-gradient(90deg,#faf9f6 0%,#e4e8ec 42%,#172c4b 100%)}.miniXrays{position:absolute;right:8%;top:18px;width:52%;height:106px;display:flex;gap:8px;align-items:center;justify-content:center}.miniXrays i{display:block;width:34px;height:90px;background:linear-gradient(180deg,#f4f7fb,#8595aa);border-radius:50% 50% 8px 8px;opacity:.9;transform:rotate(7deg)}.miniXrays i:nth-child(2){height:108px;transform:none}.miniXrays i:nth-child(3){transform:rotate(-7deg)}
-        .bookMedia{background:linear-gradient(90deg,#faf9f6 0%,#ece8df 46%,#263b60 100%)}.booksPile{position:absolute;right:7%;bottom:16px;width:55%;height:103px}.booksPile i{position:absolute;right:0;width:86%;height:30px;border-radius:4px;background:#14284e;box-shadow:0 7px 13px #0003}.booksPile i:nth-child(1){bottom:0;transform:rotate(1deg)}.booksPile i:nth-child(2){bottom:30px;right:8%;background:#21365e;transform:rotate(-4deg)}.booksPile i:nth-child(3){bottom:61px;right:2%;background:#0e2245;transform:rotate(5deg)}
+        .resourceMedia{width:100%;aspect-ratio:2/1;max-height:300px;position:relative;overflow:hidden;background:#0b1f38}.resourcePhoto{object-fit:cover;object-position:50% 52%}.resourceMedia:after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(135deg,#06152935,transparent 55%)}.resourceIcon{position:absolute;z-index:1;left:16px;top:16px;width:36px;height:36px;border:1px solid #d4af4b88;border-radius:50%;display:grid;place-items:center;background:#0b1f38db;color:#f1d58d;font-size:15px}
         .resourceBody{padding:18px 20px 20px}.resourceBody h2{margin:0;color:#142653;font:600 28px 'Playfair Display'}.resourceBody p{min-height:44px;margin:8px 0 13px;color:#68738a;font-size:12px;line-height:1.55}
-        .miniThumbRow{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:5px 0 16px}.miniThumbRow i{display:block;height:42px;border-radius:3px;border:1px solid #dfe2e8}.lectureThumbs i{background:linear-gradient(145deg,#0f2449,#294e79)}.lectureThumbs i:nth-child(3){background:linear-gradient(145deg,#f4f4ef,#b9c7d4)}.caseThumbs i{background:linear-gradient(145deg,#d8dde2,#71839d)}.caseThumbs i:nth-child(2){background:radial-gradient(circle,#d8c5a4,#4e7892)}.bookThumbs i{background:linear-gradient(145deg,#112852,#24446d)}.bookThumbs i:nth-child(4){background:linear-gradient(145deg,#e8e5dc,#99aabb)}
-        .resourceFoot{display:flex;align-items:center;justify-content:space-between;gap:14px}.resourceFoot a{color:#b77f0d;text-decoration:none;font:700 10px 'Manrope'}.resourceFoot span{max-width:48%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#8a92a3;font-size:9px}
+        .resourceFoot{border-top:1px solid #eee8dc;margin-top:18px;padding-top:15px;display:flex;align-items:center;justify-content:space-between;gap:14px}.resourceFoot a{color:#b77f0d;text-decoration:none;font:700 10px 'Manrope'}.resourceFoot span{max-width:48%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#8a92a3;font-size:9px}
         .conceptDivider{display:flex;align-items:center;justify-content:center;gap:12px;margin-top:28px;color:#7b8599;font:600 8px 'Manrope';letter-spacing:2.5px}.conceptDivider i{width:80px;height:1px;background:#d8cda9}.conceptDivider b{color:#b88b23}
         .homeFooter{background:#fbfaf7}
         @media(max-width:900px){.conceptHero{background:#fbfaf7}.conceptGrid{grid-template-columns:1fr}.conceptCopy{min-width:0;padding:50px 0 38px}.conceptVisual{min-height:430px;aspect-ratio:4/3}.heroMicroscope{object-position:50% 38%}.resourceGrid{grid-template-columns:1fr}.conceptStats{overflow:auto}.conceptStats>div{min-width:140px}.conceptHero h1{font-size:54px}}
