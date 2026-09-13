@@ -77,6 +77,8 @@
   transition: transform 220ms ease;
 }
 .links a:hover { color: #f3d694; background: #d6b56b0e; }
+.links a[aria-current="page"] { color: #f3d694; background: #d6b56b18; }
+.links a[aria-current="page"]::after { transform: scaleX(1); }
 .links a:hover::after, .links a:focus-visible::after { transform: scaleX(1); }
 
 .actions { display: flex; align-items: center; gap: 10px; }

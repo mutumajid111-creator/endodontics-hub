@@ -3,6 +3,7 @@ import "./globals.css";
 import "./brand-theme.css";
 import "./member-dashboard.css";
 import "./logo-fixes.css";
+import "./experiences.css";
 
 export const metadata: Metadata = {
   title: "Endodontics Hub | Dr. Muthanna Majid",

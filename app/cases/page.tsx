@@ -1,23 +1,15 @@
-import Link from "next/link";
+import Image from "next/image";
+import Link from "@/components/ExperienceLink";
 import SiteHeader from "@/components/SiteHeader";
 import { createPublicSupabaseClient } from "@/lib/supabase-public";
-
 export const metadata = { title: "Clinical Cases | Dr. Muthanna Majid" };
 export const dynamic = "force-dynamic";
-
 export default async function CasesPage() {
-  const supabase = createPublicSupabaseClient();
-  const { data: cases } = await supabase.from("case_catalog").select("id,title,slug,summary,category,tooth,access_level,published_at").order("published_at", { ascending: false });
-
-  return <main className="casesExperience">
-    <SiteHeader/>
-    <section className="casesHero shell"><div><p className="eyebrow">CASE ARCHIVE · DR. MUTHANNA MAJID</p><h1>Clinical endodontics,<br/><em>documented with purpose.</em></h1><p>Diagnosis, treatment sequence and clinical decisions presented as a clean visual archive for serious endodontic learning.</p></div><div className="casesHeroStat"><strong>{String(cases?.length||0).padStart(2,"0")}</strong><span>PUBLISHED<br/>CASES</span></div></section>
-    <section className="shell casesEditorial">
-      {!cases?.length ? <div className="emptyPremium"><h2>No published cases yet.</h2><p>New cases will appear here automatically.</p></div> : cases.map((c,i)=><article className="caseEditorialCard" key={c.id}>
-        <div className="caseIndex">{String(i+1).padStart(2,"0")}</div>
-        <div className="caseEditorialVisual"><div className="caseTooth"><i></i><i></i><i></i></div><span>CLINICAL RECORD</span></div>
-        <div className="caseEditorialBody"><div className="caseTags"><span>{c.category||"Clinical Case"}</span><span>{c.tooth||"Endodontics"}</span>{c.access_level==="subscriber"&&<span className="premiumTag">MEMBER</span>}</div><h2>{c.title}</h2><p>{c.summary||"A documented clinical case with diagnosis, treatment sequence and practical endodontic notes."}</p><div className="caseEditorialActions"><Link href={`/cases/${c.slug}`} className="caseOpen">{c.access_level==="subscriber"?"View member case":"View case"}<b>↗</b></Link>{c.access_level==="subscriber"&&<Link href="/pricing" className="caseMembership">Membership</Link>}</div></div>
-      </article>)}
-    </section>
-  </main>;
+ const supabase = createPublicSupabaseClient();
+ const { data: cases } = await supabase.from("case_catalog").select("id,title,slug,summary,category,tooth,access_level,published_at").order("published_at", { ascending: false });
+ return <main className="clinicalExperience"><SiteHeader/>
+  <section className="clinicalHero"><div className="shell clinicalHeroGrid"><div><Link href="/" className="experienceBack">← Endodontics Hub</Link><p className="experienceEyebrow">THE CLINICAL ARCHIVE</p><h1>Every case.<br/><em>A clinical perspective.</em></h1><p className="experienceLead">Diagnosis, treatment sequence and clinical decisions presented as a clear visual archive for serious endodontic learning.</p><div className="clinicalSteps" aria-label="Clinical case structure"><span>01 / DIAGNOSIS</span><span>02 / TREATMENT</span><span>03 / OUTCOME</span></div></div><div className="clinicalHeroPhoto"><Image src="/resource-cases.webp" alt="Endodontic instruments prepared for clinical practice" fill sizes="(max-width: 760px) 94vw, 45vw" preload/><div className="clinicalCount"><strong>{String(cases?.length||0).padStart(2,"0")}</strong><span>PUBLISHED<br/>CASES</span></div></div></div></section>
+  <section className="shell experienceCollection" aria-labelledby="cases-collection"><div className="collectionHeading"><div><p className="experienceEyebrow">OBSERVE · UNDERSTAND · APPLY</p><h2 id="cases-collection">Case records</h2></div><span>Clinical decisions, documented</span></div>
+   {!cases?.length ? <div className="experienceEmpty"><span aria-hidden="true">◎</span><h2>No published cases yet.</h2><p>New clinical records will appear here when they are published.</p><Link href="/">Return to the hub →</Link></div> : <div className="clinicalRecords">{cases.map((c,i)=><article className="clinicalRecord" key={c.id}><div className="clinicalRecordIndex"><span>CASE FILE</span><strong>{String(i+1).padStart(2,"0")}</strong><i aria-hidden="true"/></div><div className="clinicalRecordBody"><div className="clinicalRecordTags"><span>{c.category||"Endodontics"}</span>{c.tooth&&<span>{c.tooth}</span>}<span className="experienceAccess">{c.access_level==="subscriber"?"MEMBER CASE":"OPEN ACCESS"}</span></div><h3>{c.title}</h3><p>{c.summary||"A documented clinical case with diagnosis, treatment sequence and practical endodontic notes."}</p><div className="clinicalRecordActions"><Link href={`/cases/${c.slug}`} className="experienceTextLink">{c.access_level==="subscriber"?"View member case":"Explore case"}<span aria-hidden="true">↗</span></Link>{c.access_level==="subscriber"&&<Link href="/pricing" className="clinicalMembership">Membership details</Link>}</div></div></article>)}</div>}
+  </section></main>;
 }

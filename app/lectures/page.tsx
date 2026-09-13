@@ -1,25 +1,16 @@
 "use client";
-
-import Link from "next/link";
+import Image from "next/image";
+import Link from "@/components/ExperienceLink";
 import { useEffect, useState } from "react";
 import SiteHeader from "@/components/SiteHeader";
 import { supabase } from "@/lib/supabase";
-
 type Lecture={id:string;title:string;slug:string;description:string|null;category:string|null;sort_order:number;access_level:"free"|"subscriber"};
-
 export default function LecturesPage(){
  const [lectures,setLectures]=useState<Lecture[]>([]); const [loading,setLoading]=useState(true);
- useEffect(()=>{async function load(){const {data}=await supabase.from("lecture_catalog").select("id,title,slug,description,category,sort_order,access_level").order("sort_order").order("published_at",{ascending:false});setLectures((data||[]) as Lecture[]);setLoading(false);}void load();},[]);
- return <main className="memberPage">
-  <SiteHeader/>
-  <section className="memberLectureHero"><div className="shell"><p className="eyebrow">VIDEO LEARNING LIBRARY</p><h1>Master Endodontics,<br/>one clinical lesson at a time.</h1><p style={{maxWidth:680,color:"#70798c",lineHeight:1.8}}>Focused lectures designed for serious clinical learning. Subscriber videos are protected inside the platform and unlock automatically with an active membership.</p></div></section>
-  <section className="shell lectureCardGrid">
-   {loading?<div className="memberLoading" style={{gridColumn:"1 / -1"}}>Loading lectures...</div>:lectures.length?lectures.map((lecture,i)=><Link href={`/lectures/${lecture.slug}`} className="lectureCard" key={lecture.id}>
-    <div className="lectureCardTop"><span>{lecture.category||`LECTURE ${String(i+1).padStart(2,"0")}`}</span><span className="lectureLock">{lecture.access_level==="subscriber"?"MEMBER":"FREE"}</span></div>
-    <h2>{lecture.title}</h2>
-    <p>{lecture.description||"A focused Endodontic lecture with practical clinical concepts and decision-making."}</p>
-    <div className="lectureCardFoot"><span>{lecture.access_level==="subscriber"?"Protected lecture":"Open lecture"}</span><span>Watch now →</span></div>
-   </Link>):<div className="emptyPremium" style={{gridColumn:"1 / -1"}}><h2>No lectures published yet.</h2></div>}
-  </section>
- </main>;
+ useEffect(()=>{let cancelled=false;async function load(){const {data}=await supabase.from("lecture_catalog").select("id,title,slug,description,category,sort_order,access_level").order("sort_order").order("published_at",{ascending:false});if(!cancelled){setLectures((data||[]) as Lecture[]);setLoading(false);}}void load();return()=>{cancelled=true;};},[]);
+ return <main className="lectureExperience"><SiteHeader/>
+  <section className="lectureCinemaHero"><Image src="/resource-lectures.webp" alt="" fill sizes="100vw" preload className="lectureCinemaImage"/><div className="lectureCinemaShade"/><div className="shell lectureCinemaCopy"><Link href="/" className="experienceBack">← Endodontics Hub</Link><p className="experienceEyebrow">THE LEARNING STUDIO</p><h1>Master Endodontics.<br/><em>One lesson at a time.</em></h1><p>Focused lectures designed for serious clinical learning, from foundational concepts to practical decision-making.</p><div className="lectureCinemaMeta"><span className="lectureCinemaPlay" aria-hidden="true">▶</span><span>WATCH. LEARN. APPLY.<small>{loading?"Loading your library…":`${lectures.length} lectures in the collection`}</small></span></div></div></section>
+  <section className="shell experienceCollection" aria-labelledby="lectures-collection"><div className="collectionHeading"><div><p className="experienceEyebrow">KNOWLEDGE INTO PRACTICE</p><h2 id="lectures-collection">Choose your next lesson</h2></div><span>Clinical video learning</span></div>
+   {loading?<div className="lectureSkeletonGrid" role="status" aria-label="Loading lectures"><div/><div/><div/></div>:lectures.length?<div className="lectureEpisodes">{lectures.map((lecture,i)=><Link href={`/lectures/${lecture.slug}`} className="lectureEpisode" key={lecture.id}><div className="lectureEpisodeVisual"><span className="episodeNumber">LESSON {String(i+1).padStart(2,"0")}</span><span className="episodePlay" aria-hidden="true">▶</span><span className="episodeCategory">{lecture.category||"CLINICAL LEARNING"}</span><span className="episodeAccess">{lecture.access_level==="subscriber"?"MEMBER":"FREE"}</span></div><div className="lectureEpisodeBody"><h3>{lecture.title}</h3><p>{lecture.description||"A focused Endodontic lecture with practical clinical concepts and decision-making."}</p><div className="lectureEpisodeFoot"><span>{lecture.access_level==="subscriber"?"Protected lecture":"Open lecture"}</span><strong>Watch now <span aria-hidden="true">→</span></strong></div></div></Link>)}</div>:<div className="experienceEmpty"><span aria-hidden="true">▷</span><h2>No lectures published yet.</h2><p>Your next lesson will appear here when it is published.</p><Link href="/">Return to the hub →</Link></div>}
+  </section></main>;
 }
