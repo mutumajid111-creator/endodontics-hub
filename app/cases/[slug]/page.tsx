@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import Brand from "@/components/Brand";
+import CaseGallery from "@/components/CaseGallery";
 import { supabase } from "@/lib/supabase";
 import { ensureThisDevice, isCurrentDevice } from "@/lib/device-session";
 import styles from "./case.module.css";
@@ -47,7 +48,7 @@ export default function CaseDetailPage(){
     <section><h2>Diagnosis</h2><p>{item.diagnosis||"Clinical details will be added soon."}</p></section>
     <section><h2>Treatment sequence</h2>{treatmentSteps.length?<ol>{treatmentSteps.map((step:string)=><li key={step}>{step}</li>)}</ol>:<p>Treatment sequence will be added soon.</p>}</section>
     <section><h2>Outcome</h2><p>{item.outcome||"Outcome documentation will be added soon."}</p></section>
-    <section><h2>Clinical images & radiographs</h2>{images.length?<div className="caseMediaGrid">{images.map(image=><figure key={image.id}>{image.url&&<img src={image.url} alt={image.caption||`${item.title} ${image.image_type}`}/>}<figcaption><span>{image.image_type}</span>{image.caption&&<p>{image.caption}</p>}</figcaption></figure>)}</div>:<div className="imagePlaceholder"><span>No images uploaded yet</span></div>}</section>
+    <section><h2>Clinical images & radiographs</h2><CaseGallery key={item.id} images={images} title={item.title}/></section>
   </div></section>
  </main>;
 }
